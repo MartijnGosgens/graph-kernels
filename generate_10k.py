@@ -1,5 +1,5 @@
 import json
-from generate-graphs import *
+from generate_graphs import *
 
 
 res = dict()
