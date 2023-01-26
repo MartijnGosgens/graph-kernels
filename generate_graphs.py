@@ -2,14 +2,19 @@ import numpy as np
 import itertools as it
 import igraph as ig
 import networkx as nx
+import math
 
 # Set parameters
 n = 50
-mean_deg = 8
+m = 4
+# PA will have average degree 7.6
+mean_deg = 7.6
 p = mean_deg/(n-1)
-p_out = p/2
-p_in = p*((3/2)*n-1)/(n-1)
+in_out_ratio = 2
+p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
+p_in = p_out*in_out_ratio
 r = (p/np.pi)**0.5
+thres_angle = 2*np.arcsin(p**0.5)
 
 
 # Graph generators
@@ -36,7 +41,24 @@ def generate_GRG(n=n, r=r):
 
 def angle(x,y):
     return np.arccos((x*y).sum()/((x*x).sum() * (y*y).sum())**0.5)
-def generate_GRG_hypersphere(n, d, thres_angle, return_igraph=True):
+def torusdist(x,y):
+    return sum([
+        min((vx-vy)**2, (vx+1-vy)**2, (vy+1-vx)**2)
+        for vx,vy in zip(x, y)
+    ])**0.5
+def p2torus_r(d, p):
+    # Source: https://en.wikipedia.org/wiki/Volume_of_an_n-ball
+    if d%2==0:
+        return (math.factorial(int(d/2))*p)**(1/d) / np.pi**0.5
+    # d is odd:
+    k=int((d-1)/2)
+    return (
+        math.factorial(d)*p
+        / (2*math.factorial(k)*(4*np.pi)**k)
+    )**(1/d)
+
+
+def generate_GRG_hypersphere(n=n, d=2, thres_angle=thres_angle, return_igraph=True):
     """
         This generates a GRG on a d-sphere (that is, d=1 is a circle while d=2 is a sphere).
         The link between thres_angle and the edge-density is tricky for higher dimensions. The edge-density is given by
@@ -45,29 +67,60 @@ def generate_GRG_hypersphere(n, d, thres_angle, return_igraph=True):
         For d=1, this is simply thres_angle/pi. For d=2, it is sin^2(thres_angle/2) and for d=3, we get
         (2*thres_angle-sin(2*thres_angle))/pi and it will only get worse from there.
     """
-    coords = dict(zip(range(n),np.random.normal(size=(n,d+1))))
+    coords = dict(zip(range(n), np.random.normal(size=(n, d+1))))
     edges = [
-        (i,j) for i,j in it.combinations(range(n),2)
-        if angle(coords[i],coords[j])<thres_angle
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if angle(coords[i], coords[j]) < thres_angle
     ]
     if return_igraph:
-        g = ig.Graph()
-        g.add_vertices(n)
-        g.add_edges(edges)
-        return g
+        return edges2ig(n, edges)
     return edges
+
+
+def generate_GRG_torus(n=n, r=r, p=None, d=2, return_igraph=True):
+    if p is not None:
+        r = p2torus_r(d=d, p=p)
+    coords = dict(zip(range(n), np.random.rand(n, d)))
+    edges = [
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if torusdist(coords[i], coords[j]) < r
+    ]
+    if return_igraph:
+        return edges2ig(n, edges)
+    return edges
+
 
 def generate_GRG_square(n=n, r=r):
     return ig.Graph.GRG(n, r, torus=False)
 
+
+def generate_PA(n=n, m=m):
+    """
+        Note that the average degree will be lower than 2*m since initially, when m is larger than the number of
+        vertices, it will not be possible to connect to m others. Also, this implementation seems to avoid multi-edges,
+        so that the total number of edges is fixed and equal to m*(n-(m+1)/2).
+    """
+    return ig.Graph.Barabasi(n, m)
+
+
+def edges2ig(n, edges):
+    g = ig.Graph()
+    g.add_vertices(n)
+    g.add_edges(edges)
+    return g
+
+
 def ig2edges(g):
     return [(e.source, e.target) for e in g.es]
+
 
 def edges2nx(e):
     return nx.from_edgelist(e)
 
+
 def ig2nx(g):
     return edges2nx(ig2edges(g))
+
 
 def nx2stats(ng):
     return (
