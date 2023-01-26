@@ -57,8 +57,26 @@ def p2torus_r(d, p):
         / (2*math.factorial(k)*(4*np.pi)**k)
     )**(1/d)
 
+def p2thres_angle(d, p):
+    """
+        Computes the thres_angle such that a GRG on a d-sphere has density p.
+        The surface area of a hyperspherical cap with angle alpha<pi/2 is a fraction
+            (1/2) betainc(d/2,1/2.np.sin(alpha)**2)
+        of the total surface of the d-sphere. Inverting this, gives
+            np.arcsin(betaincinv(d/2, 1/2, 2*p)**0.5).
+        If alpha>pi/2, then we can compute pi-alpha as the spherical cap with fraction 1-p.
+    """
+    from scipy.special import betaincinv
+    if p == 0.5:
+        return np.pi/2
+    if p > 0.5:
+        return np.pi - p2thres_angle(1-p, d=d)
+    return np.arcsin(
+        betaincinv(d/2, 1/2, 2*p) ** 0.5
+    )
 
-def generate_GRG_hypersphere(n=n, d=2, thres_angle=thres_angle, return_igraph=True):
+
+def generate_GRG_hypersphere(n=n, d=2, thres_angle=thres_angle, p=None, return_igraph=True):
     """
         This generates a GRG on a d-sphere (that is, d=1 is a circle while d=2 is a sphere).
         The link between thres_angle and the edge-density is tricky for higher dimensions. The edge-density is given by
@@ -67,6 +85,8 @@ def generate_GRG_hypersphere(n=n, d=2, thres_angle=thres_angle, return_igraph=Tr
         For d=1, this is simply thres_angle/pi. For d=2, it is sin^2(thres_angle/2) and for d=3, we get
         (2*thres_angle-sin(2*thres_angle))/pi and it will only get worse from there.
     """
+    if p is not None:
+        thres_angle = p2thres_angle(d=d, p=p)
     coords = dict(zip(range(n), np.random.normal(size=(n, d+1))))
     edges = [
         (i, j) for i, j in it.combinations(range(n), 2)
