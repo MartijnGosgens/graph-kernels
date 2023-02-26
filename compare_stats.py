@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import mannwhitneyu,ttest_ind
 import matplotlib.pyplot as plt
 
-fn = '10k_samples.json'
+fn = '1k_samples.json'
 
 def stat_tests(sample1,sample2):
     try:
@@ -29,6 +29,7 @@ for idx, par in enumerate(['avg_clustering', 'edges', 'transitivity', 'triangles
                 print(f'{par}\t{g1}\t{np.mean(pools[g1])}\t{g2}\t{np.mean(pools[g2])}\tpval\t{stat_tests(pools[g1],pools[g2])}')
 
     plt.clf()
+    plt.title(par)
     for g in pools:
         plt.hist(pools[g], label=g, alpha=.5)
     plt.legend()
