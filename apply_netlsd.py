@@ -5,6 +5,8 @@ import json
 import netlsd
 import networkx as nx
 import numpy as np
+from scipy import spatial
+
 # from grakel import Graph
 # from grakel import GraphKernel
 # from grakel.kernels import RandomWalkLabeled, ShortestPathAttr, RandomWalk, PyramidMatch, NeighborhoodHash, ShortestPath, GraphletSampling, SubgraphMatching, WeisfeilerLehman, HadamardCode, NeighborhoodSubgraphPairwiseDistance, SvmTheta, Propagation, PropagationAttr, OddSth, MultiscaleLaplacian, HadamardCode, VertexHistogram, EdgeHistogram, GraphHopper, CoreFramework, WeisfeilerLehmanOptimalAssignment
@@ -48,8 +50,12 @@ for k in ('netlsd',):
             for i in range(len(gr_pack)):
                 for j in range(len(gr_pack)):
                     # print("\t".join(map(str, ['#', kernel_name, p_idx, gens[i//(2*SAMPLE_SIZE)], i%(2*SAMPLE_SIZE), gens[j//(2*SAMPLE_SIZE)], j%(2*SAMPLE_SIZE), vals[i,j]])), flush=True)
-                    print("\t".join(map(str, ['#', kernel_name, p_idx, gens[i//(2*SAMPLE_SIZE)], i%(2*SAMPLE_SIZE), gens[j//(2*SAMPLE_SIZE)], j%(2*SAMPLE_SIZE), 
-                        netlsd.compare(gr_pack[i], gr_pack[j])])), # vals[i,j]])), 
+                    print("\t".join(map(str, ['#', kernel_name+'.dotprod', p_idx, gens[i//(2*SAMPLE_SIZE)], i%(2*SAMPLE_SIZE), gens[j//(2*SAMPLE_SIZE)], j%(2*SAMPLE_SIZE), 
+                        np.dot(gr_pack[i], gr_pack[j])])), # vals[i,j]])), 
+                        # netlsd.compare(gr_pack[i], gr_pack[j])])), # vals[i,j]])), 
+                        flush=True)
+                    print("\t".join(map(str, ['#', kernel_name+'.cossim', p_idx, gens[i//(2*SAMPLE_SIZE)], i%(2*SAMPLE_SIZE), gens[j//(2*SAMPLE_SIZE)], j%(2*SAMPLE_SIZE), 
+                        1 - spatial.distance.cosine(gr_pack[i], gr_pack[j]) ])), # vals[i,j]])), 
                         flush=True)
 #    except:
 #        print('err')
