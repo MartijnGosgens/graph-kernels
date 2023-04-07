@@ -1,0 +1,62 @@
+# How to reproduce GIN results
+
+## Graph generation
+same as in previous experiments : 1. 
+* to generate sample graphs:
+  `python sample_graphs.py 1000 1k_samples.json`
+
+* to calculate basic stats of generated graphs use `compare_stats.py` and `compare_shortestpath.py`
+
+## Install GGM (GIN)
+
+```
+git clone https://github.com/uoguelph-mlrg/GGM-metrics
+cd GGM-metrics/
+virtualenv _env
+source _env/bin/activate
+pip install -r requirements.txt
+pip install dgl==0.6.1
+```
+
+## Sequence to generate embeddings and calc MMDs
+
+* to generate kernel values run `python apply_gin.py > gin_raw.tsv`
+* to parse results run `python parse_gin.py` (it takes gin_raw.tsv as an input, provides gin.vals.json as an output; both files are huge)
+* finally run `python calc_mmds_gin.py` to calculate the matrix of MMDs; it takes gin.vals.json as an input, provides gin_mmd_matrix.json as an output
+* use `python compare_mmds_gin.py > gin_mmd_results.tsv` to analyze the MMD matrix
+
+## Results: non-separated generators
+
+```
+GIN.dotprod	ER_vs_PPM	421888.1317037046	ER_vs_ER	424133.6545185149	pval	0.8533817367547931
+GIN.dotprod	ER_vs_GRG	1052572.9437036952	ER_vs_ER	424133.6545185149	pval	0.2170168245486217
+GIN.dotprod	ER_vs_GRGh	957390.6291111052	ER_vs_ER	424133.6545185149	pval	0.2707053377245183
+GIN.dotprod	ER_vs_GRGt	839669.443925939	ER_vs_ER	424133.6545185149	pval	0.43764133504824576
+GIN.dotprod	PPM_vs_ER	421888.1317037046	PPM_vs_PPM	298186.11385186116	pval	0.3328546915727283
+GIN.dotprod	GRG_vs_ER	1052572.9437036952	GRG_vs_GRG	701964.743259259	pval	0.8766349003139949
+GIN.dotprod	GRG_vs_PPM	1166011.7967407426	GRG_vs_GRG	701964.743259259	pval	0.19073033347156776
+GIN.dotprod	GRG_vs_GRGh	1468033.9577036977	GRG_vs_GRG	701964.743259259	pval	0.090490360906144
+GIN.dotprod	GRG_vs_GRGt	1458773.5045185208	GRG_vs_GRG	701964.743259259	pval	0.795845542466455
+GIN.dotprod	GRGh_vs_ER	957390.6291111052	GRGh_vs_GRGh	1242414.0094814757	pval	0.11536235969206284
+GIN.dotprod	GRGh_vs_PPM	1368452.4314814806	GRGh_vs_GRGh	1242414.0094814757	pval	0.4464194359599726
+GIN.dotprod	GRGh_vs_GRGt	1225585.7395555496	GRGh_vs_GRGh	1242414.0094814757	pval	0.24581380245894136
+GIN.dotprod	GRGt_vs_ER	839669.443925939	GRGt_vs_GRGt	1349330.1662222305	pval	0.12967022490828164
+GIN.dotprod	GRGt_vs_PPM	1168314.1461481513	GRGt_vs_GRGt	1349330.1662222305	pval	0.3710770321265142
+GIN.dotprod	GRGt_vs_GRG	1458773.5045185208	GRGt_vs_GRGt	1349330.1662222305	pval	0.5395103167994048
+GIN.dotprod	GRGt_vs_GRGh	1225585.7395555496	GRGt_vs_GRGt	1349330.1662222305	pval	0.38709977767912396
+
+
+GIN.cossim	ER_vs_PPM	9.629925092050998e-06	ER_vs_ER	9.91601855667342e-06	pval	0.8072749507289148
+GIN.cossim	PPM_vs_ER	9.629925092050998e-06	PPM_vs_PPM	7.674442397206013e-06	pval	0.36322231255273874
+GIN.cossim	GRG_vs_ER	4.773951018296844e-05	GRG_vs_GRG	1.9811511039706057e-05	pval	0.051877131053959046
+GIN.cossim	GRG_vs_GRGh	3.353292412224078e-05	GRG_vs_GRG	1.9811511039706057e-05	pval	0.10232626822732968
+GIN.cossim	GRG_vs_GRGt	4.062909550136921e-05	GRG_vs_GRG	1.9811511039706057e-05	pval	0.47334655725844954
+GIN.cossim	GRGh_vs_ER	4.3632838461094003e-05	GRGh_vs_GRGh	3.3168373284516346e-05	pval	0.7844597689495465
+GIN.cossim	GRGh_vs_PPM	5.976075596281956e-05	GRGh_vs_GRGh	3.3168373284516346e-05	pval	0.5105979366056446
+GIN.cossim	GRGh_vs_GRG	3.353292412224078e-05	GRGh_vs_GRGh	3.3168373284516346e-05	pval	0.8418014501581275
+GIN.cossim	GRGh_vs_GRGt	3.018228212993505e-05	GRGh_vs_GRGh	3.3168373284516346e-05	pval	0.1536672354850899
+GIN.cossim	GRGt_vs_ER	4.538352401165883e-05	GRGt_vs_GRGt	3.7068000546192084e-05	pval	0.8072749507289148
+GIN.cossim	GRGt_vs_PPM	5.9788968827982165e-05	GRGt_vs_GRGt	3.7068000546192084e-05	pval	0.19579075835119908
+GIN.cossim	GRGt_vs_GRG	4.062909550136921e-05	GRGt_vs_GRGt	3.7068000546192084e-05	pval	0.6952153990669099
+GIN.cossim	GRGt_vs_GRGh	3.018228212993505e-05	GRGt_vs_GRGt	3.7068000546192084e-05	pval	0.1579756891505133
+```
