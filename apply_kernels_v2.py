@@ -7,6 +7,7 @@ import numpy as np
 from grakel import Graph
 from grakel import GraphKernel
 from grakel.kernels import RandomWalkLabeled, ShortestPathAttr, RandomWalk, PyramidMatch, NeighborhoodHash, ShortestPath, GraphletSampling, SubgraphMatching, WeisfeilerLehman, HadamardCode, NeighborhoodSubgraphPairwiseDistance, SvmTheta, Propagation, PropagationAttr, OddSth, MultiscaleLaplacian, HadamardCode, VertexHistogram, EdgeHistogram, GraphHopper, CoreFramework, WeisfeilerLehmanOptimalAssignment
+from collections import defaultdict
 
 # setup
 fn = '1k_samples.json'
@@ -25,15 +26,24 @@ gens = list(d['graphs']) # list of the generators
 for idx, gg in enumerate(gens):
     mtx[gg] = list()
     for g in d['graphs'][gg]:
-        mtx[gg].append( Graph(list(map(tuple,g)), node_labels=dict([(i,'A') for i in range(N)])) )
+        mtx[gg].append( Graph(list(map(tuple,g)), node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in map(tuple,g)}) )
 print('matrices done', file=sys.stderr, flush=True)
 print(gg, len(mtx[gg]), mtx[gg][0], file=sys.stderr, flush=True)
 
 
+kernel_params = defaultdict(dict)
+kernel_params[GraphletSampling] = {
+    'sampling': {'n_samples': 5000}
+}
+kernel_params[RandomWalk] = {
+    'lamda': 0.1, # not 'lambda' (typo in grakel?)
+    'p': 5
+}
+
 ks = []
 kn = []
 for k in (
-     RandomWalk, # ERRRs
+     #RandomWalk, # ERRRs
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
@@ -41,7 +51,8 @@ for k in (
      Propagation,
      OddSth,
      WeisfeilerLehmanOptimalAssignment,
-     SvmTheta, # ERRR
+     NeighborhoodSubgraphPairwiseDistance,
+     # SvmTheta, # ERRR
     ):
 
     kernel_name = str(k).split("'")[1].split(".")[-1]
@@ -51,7 +62,7 @@ for k in (
             for g in gens:
                 gr_pack.extend( mtx[g][p_idx*SAMPLE_SIZE:(p_idx+2)*SAMPLE_SIZE] )
                 # from each generator we take current pack + next pack to fit on
-            vals = k(normalize=True).fit_transform(gr_pack)
+            vals = k(normalize=True,**kernel_params[k]).fit_transform(gr_pack)
             print('pack', p_idx, len(gr_pack), file=sys.stderr, flush=True)
             for i in range(len(vals)):
                 for j in range(len(vals)):
