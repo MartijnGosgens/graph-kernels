@@ -8,6 +8,7 @@ from grakel import Graph
 from grakel import GraphKernel
 from grakel.kernels import RandomWalkLabeled, ShortestPathAttr, RandomWalk, PyramidMatch, NeighborhoodHash, ShortestPath, GraphletSampling, SubgraphMatching, WeisfeilerLehman, HadamardCode, NeighborhoodSubgraphPairwiseDistance, SvmTheta, Propagation, PropagationAttr, OddSth, MultiscaleLaplacian, HadamardCode, VertexHistogram, EdgeHistogram, GraphHopper, CoreFramework, WeisfeilerLehmanOptimalAssignment
 from collections import defaultdict
+from time import time
 
 # setup
 fn = '1k_samples.json'
@@ -43,7 +44,8 @@ kernel_params[RandomWalk] = {
 ks = []
 kn = []
 for k in (
-     #RandomWalk, # ERRRs
+     #RandomWalk, # ERRRs,
+     GraphletSampling,
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
@@ -57,16 +59,19 @@ for k in (
 
     kernel_name = str(k).split("'")[1].split(".")[-1]
     try:
+        kstart_time = time()
         for p_idx in range(SAMPLES_NUM):
             gr_pack = []
             for g in gens:
                 gr_pack.extend( mtx[g][p_idx*SAMPLE_SIZE:(p_idx+2)*SAMPLE_SIZE] )
                 # from each generator we take current pack + next pack to fit on
+            pstart_time = time()
             vals = k(normalize=True,**kernel_params[k]).fit_transform(gr_pack)
-            print('pack', p_idx, len(gr_pack), file=sys.stderr, flush=True)
+            print(k.__name__,'pack', p_idx,'took',time()-pstart_time,'seconds', file=sys.stderr, flush=True)
             for i in range(len(vals)):
                 for j in range(len(vals)):
                     print("\t".join(map(str, ['#', kernel_name, p_idx, gens[i//(2*SAMPLE_SIZE)], i%(2*SAMPLE_SIZE), gens[j//(2*SAMPLE_SIZE)], j%(2*SAMPLE_SIZE), vals[i,j]])), flush=True)
+        print(k.__name__,'took',time()-kstart_time,'seconds in total', file=sys.stderr, flush=True)
     except:
         print(kernel_name, 'err')
         pass
