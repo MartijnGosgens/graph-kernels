@@ -21,6 +21,17 @@ thres_angle = 2*np.arcsin(p**0.5)
 def generate_ER(n=n,p=p):
     return ig.Graph.Erdos_Renyi(n, p, directed=False, loops=False)
 
+def generate_inhomogeneous(n=n,p=p,pl_exp=3):
+    gamma = 1/(pl_exp-1)
+    fitness=np.exp(np.random.exponential(gamma,n))
+    # The ig generator requires a fixed number of edges. We sample a Poisson number of edges, so that it resembles ER/PPM/GRG.
+    n_edges=np.random.poisson(p*n*(n-1)/2)
+    return ig.Graph.Static_Fitness(n_edges,fitness)
+
+def interpolate_ER_inhomogeneous(step,n=n,p=p):
+    pl_exp = 1+1/step if step>0 else float('Inf')
+    return generate_inhomogeneous(n=n,p=p,pl_exp=pl_exp)
+
 
 def generate_PPM(n=n,p_in=p_in,p_out=p_out,k=2):
     rem = n % k
@@ -33,6 +44,13 @@ def generate_PPM(n=n,p_in=p_in,p_out=p_out,k=2):
         for i in range(k)
     ]
     return ig.Graph.SBM(n, ps, sizes, directed=False, loops=False)
+
+# Step needs to be in the interval [0,1], so that p_in=(1+step)*p_out
+def interpolate_ER_PPM(step,p=p,n=n,k=2):
+    in_out_ratio = 1+step
+    p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
+    p_in = p_out*in_out_ratio
+    return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)
 
 
 def generate_GRG(n=n, r=r):
@@ -104,6 +122,18 @@ def generate_GRG_torus(n=n, r=r, p=None, d=2, return_igraph=True):
     edges = [
         (i, j) for i, j in it.combinations(range(n), 2)
         if torusdist(coords[i], coords[j]) < r
+    ]
+    if return_igraph:
+        return edges2ig(n, edges)
+    return edges
+
+def interpolate_ER_GRG_torus(step,p=p,n=n,d=2, return_igraph=True):
+    if p is not None:
+        r = p2torus_r(d=d, p=p)
+    coords = dict(zip(range(n), np.random.rand(n, d)))
+    edges = [
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if (torusdist(coords[i], coords[j]) < r and np.random.rand()<step) or (torusdist(coords[i], coords[j]) > r and np.random.rand()<1-step)
     ]
     if return_igraph:
         return edges2ig(n, edges)
