@@ -3,6 +3,7 @@ import itertools as it
 import igraph as ig
 import networkx as nx
 import math
+from grakel import Graph
 
 # Set parameters
 n = 50
@@ -166,6 +167,9 @@ def ig2edges(g):
 
 def edges2nx(e):
     return nx.from_edgelist(e)
+
+def edges2grakel(g,N=n):
+    return Graph(list(map(tuple,g)), node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in map(tuple,g)})
 
 
 def ig2nx(g):
