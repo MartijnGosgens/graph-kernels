@@ -60,12 +60,39 @@ def generate_GRG(n=n, r=r):
 
 def angle(x,y):
     return np.arccos((x*y).sum()/((x*x).sum() * (y*y).sum())**0.5)
-def torusdist(x,y):
+def torusdist(x,y,sizes=None):
+    if sizes is None:
+        sizes = (1,)*len(x)
     return sum([
-        min((vx-vy)**2, (vx+1-vy)**2, (vy+1-vx)**2)
-        for vx,vy in zip(x, y)
+        min((px-py)**2, (px+s-py)**2, (py+s-px)**2)
+        for px,py,s in zip(x, y,sizes)
     ])**0.5
-def p2torus_r(d, p):
+def p2torus_r(d, p, h=1):
+    if d==2 and h!=1:
+        if h>4*p/np.pi:
+            return (p*h/np.pi)**0.5
+        elif h<=0:
+            return p/2
+        else:
+            # We perform Newton-Raphson on f to find the intersection f(z)=2*p/h.
+            # Note that target>pi/2 because of the previous if-statement
+            target = 2*p/h
+            f = lambda z: (1/z**2-1)**0.5+np.arcsin(z)/z**2
+            f_prime = lambda z: -2*np.arcsin(z)/z**3
+            # We start at z=1, so that the iteration will be monotonous to the solution.
+            z = 1
+            val = f(z)
+            tolerance = 0.01
+            # Usually this only takes 
+            while abs(val-target)>tolerance:
+                step = (val-target)/f_prime(z)
+                # Ensure z won't become negative
+                if step>z:
+                    step = 0.9*z
+                z -= step
+                val = f(z)
+            return h/(2*z)
+
     # Source: https://en.wikipedia.org/wiki/Volume_of_an_n-ball
     if d%2==0:
         return (math.factorial(int(d/2))*p)**(1/d) / np.pi**0.5
@@ -135,6 +162,19 @@ def interpolate_ER_GRG_torus(step,p=p,n=n,d=2, return_igraph=True):
     edges = [
         (i, j) for i, j in it.combinations(range(n), 2)
         if (torusdist(coords[i], coords[j]) < r and np.random.rand()<step) or (torusdist(coords[i], coords[j]) > r and np.random.rand()<1-step)
+    ]
+    if return_igraph:
+        return edges2ig(n, edges)
+    return edges
+
+def interpolate_GRG_torus_circle(step, p=p, n=n, return_igraph=True):
+    h = 1-step
+    r = p2torus_r(d=2, p=p, h=h)
+    rands = np.random.rand(n, 2)
+    coords = dict(zip(range(n), zip(rands[:,0],h*rands[:,1])))
+    edges = [
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if torusdist(coords[i], coords[j],sizes=(1,h)) < r
     ]
     if return_igraph:
         return edges2ig(n, edges)
