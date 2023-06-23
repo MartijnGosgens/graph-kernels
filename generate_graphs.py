@@ -79,11 +79,11 @@ def p2torus_r(d, p, h=1):
             target = 2*p/h
             f = lambda z: (1/z**2-1)**0.5+np.arcsin(z)/z**2
             f_prime = lambda z: -2*np.arcsin(z)/z**3
-            # We start at z=1, so that the iteration will be monotonous to the solution.
+            # We start at z=1, though we could basically start anywhere in (0,1]
             z = 1
             val = f(z)
             tolerance = 0.01
-            # Usually this only takes 
+            # Usually this takes less than 3-5 iterations
             while abs(val-target)>tolerance:
                 step = (val-target)/f_prime(z)
                 # Ensure z won't become negative
@@ -191,7 +191,7 @@ def generate_PA(n=n, m=m):
         vertices, it will not be possible to connect to m others. Also, this implementation seems to avoid multi-edges,
         so that the total number of edges is fixed and equal to m*(n-(m+1)/2).
     """
-    return ig.Graph.Barabasi(n, m)
+    return ig.Graph.Barabasi(n, m, outpref=True)
 
 
 def edges2ig(n, edges):

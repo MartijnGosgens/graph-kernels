@@ -1,4 +1,4 @@
-from generate_graphs import interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous
+from generate_graphs import interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous,interpolate_GRG_torus_circle
 from experiment import Experiment,selected_kernels
 from scipy.stats import spearmanr
 from collections import defaultdict
@@ -28,7 +28,7 @@ fast_kernels = (
      # SvmTheta, # ERRR
     )
 
-interpolators = [interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous]
+interpolators = [interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle]
 nsteps = 11
 steps = np.linspace(0,1,nsteps)
 parameters = [{'step': s} for s in steps]
@@ -49,9 +49,10 @@ def calc_step_mmd_spearman(mmds):
 
 print('start experiment')
 experiment = Experiment(interpolators,parameters,npacks,sample_size=nsamples)
-#experiment.generate_graphs('interpolation_graphs1.json')
-experiment.load_graphs('interpolation_graphs1.json')
-print('loaded graphs')
+experiment.generate_graphs('interpolation_graphs2.json')
+print('Generated graphs')
+#experiment.load_graphs('interpolation_graphs2.json')
+#print('loaded graphs')
 start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),save_name='interpolation_start_vals.tsv',save_mmds_name='interpolation_start_mmds.json')
 #start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
 with open('spearmans_start.tsv','w') as save_file:
