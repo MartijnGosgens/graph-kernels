@@ -12,6 +12,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
+from other_kernels import NetLSD
 import numpy as np
 
 fast_kernels = (
@@ -27,6 +28,7 @@ fast_kernels = (
      #NeighborhoodSubgraphPairwiseDistance,
      # SvmTheta, # ERRR
     )
+just_netlsd = (NetLSD,)
 
 interpolators = [interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle]
 nsteps = 11

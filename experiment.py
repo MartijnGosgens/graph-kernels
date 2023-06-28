@@ -9,6 +9,14 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
+from other_kernels import NetLSD
+'''
+    The kernels need not be grakel kernels, but they need to follow the same interface. That is, it should be a class
+    (so that it has a .__name__), it's constructor needs to take the boolean parameter normalize and it needs to
+    have a function fit_transform. That is, we should be able to call
+        kernel(normalize=True,**kernel_params[kernel]).fit_transform(pack), 
+    and this should return a 2D array of dimension (len(pack),len(pack)).
+'''
 import json
 import itertools as it
 from collections import defaultdict
@@ -16,7 +24,8 @@ from time import time
 
 selected_kernels = (
      #RandomWalk, # ERRRs,
-     GraphletSampling,
+     #GraphletSampling,
+     NetLSD,
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
@@ -30,7 +39,7 @@ selected_kernels = (
 
 kernel_params = defaultdict(dict)
 kernel_params[GraphletSampling] = {
-    'sampling': {'n_samples': 5000}
+    'sampling': {'n_samples': 500}
 }
 kernel_params[RandomWalk] = {
     'lamda': 0.1, # not 'lambda' (typo in grakel?)

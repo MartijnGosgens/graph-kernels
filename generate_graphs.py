@@ -211,6 +211,8 @@ def edges2nx(e):
 def edges2grakel(g,N=n):
     return Graph(list(map(tuple,g)), node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in map(tuple,g)})
 
+def grakel2nx(g):
+    return nx.from_edgelist(g.get_edges())
 
 def ig2nx(g):
     return edges2nx(ig2edges(g))
