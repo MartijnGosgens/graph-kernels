@@ -1,5 +1,5 @@
-from generate_graphs import interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous,interpolate_GRG_torus_circle
-from experiment import Experiment,selected_kernels
+from generate_graphs import interpolate_ER_triangular,interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous,interpolate_GRG_torus_circle
+from experiment import Experiment,selected_kernels,tuple2str
 from scipy.stats import spearmanr
 from collections import defaultdict
 from grakel.kernels import (RandomWalk,
@@ -12,7 +12,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
-from other_kernels import NetLSD
+from other_kernels import NetLSD,Gin
 import numpy as np
 
 fast_kernels = (
@@ -34,7 +34,7 @@ interpolators = [interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inho
 nsteps = 11
 steps = np.linspace(0,1,nsteps)
 parameters = [{'step': s} for s in steps]
-nsamples = 30
+nsamples = 100
 npacks = 30
 
 def calc_step_mmd_spearman(mmds):

@@ -3,7 +3,6 @@ import itertools as it
 import igraph as ig
 import networkx as nx
 import math
-from grakel import Graph
 
 # Set parameters
 n = 50
@@ -46,12 +45,28 @@ def generate_PPM(n=n,p_in=p_in,p_out=p_out,k=2):
     ]
     return ig.Graph.SBM(n, ps, sizes, directed=False, loops=False)
 
+def closure_graph(n,p,p1):
+    G1=nx.erdos_renyi_graph(n,p1)
+    p2 = (p-p1)/((1-p1)*(1-(1-p1**2)**(n-2)))
+    G2=nx.erdos_renyi_graph(n,p2)
+    wedges = [
+        (i,j) 
+        for (i,j) in it.combinations(G1.nodes,2) 
+        if (i not in G1[j]) and (set(G1[i])&set(G1[j]))!=set()
+    ]
+    G1.add_edges_from([e for e in wedges if np.random.rand()<p2])
+    return nx2ig(G1)
+
 # Step needs to be in the interval [0,1], so that p_in=(1+step)*p_out
 def interpolate_ER_PPM(step,p=p,n=n,k=2):
     in_out_ratio = 1+step
     p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
     p_in = p_out*in_out_ratio
     return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)
+
+def interpolate_ER_triangular(step,p=p,n=n):
+    p1 = p*(1-step/2)
+    return closure_graph(n,p,p1)
 
 
 def generate_GRG(n=n, r=r):
@@ -143,6 +158,22 @@ def generate_GRG_hypersphere(n=n, d=2, thres_angle=thres_angle, p=None, return_i
     return edges
 
 
+def generate_GCG_hypersphere(n=n, d=2, p=p, return_igraph=True):
+    '''
+        GCG stands for Geometric Complementarity Graph. Complementarity is modeled geometrically by connecting nodes that are close to being
+        maximally distant (i.e., at opposite poles).
+    '''
+    thres_angle = np.pi-p2thres_angle(d=d, p=p)
+    coords = dict(zip(range(n), np.random.normal(size=(n, d+1))))
+    edges = [
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if angle(coords[i], coords[j]) > thres_angle
+    ]
+    if return_igraph:
+        return edges2ig(n, edges)
+    return edges
+
+
 def generate_GRG_torus(n=n, r=r, p=None, d=2, return_igraph=True):
     if p is not None:
         r = p2torus_r(d=d, p=p)
@@ -200,6 +231,9 @@ def edges2ig(n, edges):
     g.add_edges(edges)
     return g
 
+def nx2ig(g):
+    return edges2ig(len(g),g.edges)
+
 
 def ig2edges(g):
     return [(e.source, e.target) for e in g.es]
@@ -209,6 +243,7 @@ def edges2nx(e):
     return nx.from_edgelist(e)
 
 def edges2grakel(g,N=n):
+    from grakel import Graph
     return Graph(list(map(tuple,g)), node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in map(tuple,g)})
 
 def grakel2nx(g):

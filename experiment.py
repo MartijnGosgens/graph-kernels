@@ -9,7 +9,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
-from other_kernels import NetLSD
+from other_kernels import NetLSD,Gin
 '''
     The kernels need not be grakel kernels, but they need to follow the same interface. That is, it should be a class
     (so that it has a .__name__), it's constructor needs to take the boolean parameter normalize and it needs to
@@ -26,6 +26,7 @@ selected_kernels = (
      #RandomWalk, # ERRRs,
      #GraphletSampling,
      NetLSD,
+     Gin,
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
@@ -153,7 +154,7 @@ class Experiment:
                 pack1 = locate(self.graphs,locator1)
                 pack2 = locate(self.graphs,locator2)
                 for k in kernels:
-                    print(k.__name__)
+                    #print(k.__name__)
                     start_time = time()
                     vals = k(normalize=True,**kernel_params[k]).fit_transform(pack1+pack2)
                     it1 = range(len(pack1))
