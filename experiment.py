@@ -106,15 +106,23 @@ class Experiment:
     '''
         Generates the graphs using the generators and parameters.
         Saves the json to save_name.
+        The npacks_dict allows to specify a different number of packs for certain graph-parameter combinations. It should be a nested dict like
+            npacks_dict[generator.__name__][parameter tuple string]
+            If there are no parameters, the second index should be ''.
         The result will be a nested dictionary.
             If parameters is None:
                 graphs[generator:self.generators][pack:int][isample:int]
             If parameters is not None:
                 graphs[generator:self.generators][parameter:self.parameters][pack:int][isample:int]
     '''
-    def generate_graphs(self,save_name,npacks=None,sample_size=None):
+    def generate_graphs(self,save_name,npacks=None,sample_size=None,npacks_dict=None):
         if npacks is None:
             npacks = self.npacks
+        npacks_d = defaultdict(lambda: defaultdict(lambda: npacks))
+        if npacks_dict is not None:
+            for g,g_d in npacks_dict.items():
+                for p,v in g_d.items():
+                    npacks_d[g][p] = v
         if sample_size is None:
             sample_size = self.sample_size
         graphs = dict()
@@ -122,14 +130,16 @@ class Experiment:
             if self.parameters is None:
                 graphs[generator.__name__] = [
                     self.generate_pack(generator,sample_size)
-                    for _ in range(npacks)
+                    for _ in range(npacks_d[generator.__name__][''])
                 ]
             else:
                 graphs[generator.__name__] = dict()
                 for parameter in self.parameters:
+                    npacks_to_create = npacks_d[generator.__name__][tuple2str(parameter.values())]
+                    print('Generating',npacks_to_create,'packs of',generator.__name__,'parameter',tuple2str(parameter.values()))
                     graphs[generator.__name__][tuple2str(parameter.values())] = [
                         self.generate_pack(generator,sample_size,parameter=parameter)
-                        for _ in range(npacks)
+                        for _ in range(npacks_to_create)
                     ]
         with open(save_name, 'w') as save_file:
             json.dump(graphs, save_file)
@@ -206,27 +216,28 @@ class Experiment:
 
     def iterator_transitions_startcomparison(self):
         start_param = self.parameter_names[0]
-        end_param = self.parameter_names[-1]
         for m in self.generator_names:
-            for param in self.parameter_names:
+            for i,param in enumerate(self.parameter_names):
                 for p_idx in range(self.npacks):
                     # Comparison to start
                     if param!=start_param:
-                        yield (m,param,p_idx),(m,start_param,p_idx)
+                        print('Compare',p_idx,'to',i*self.npacks+p_idx)
+                        yield (m,param,p_idx),(m,start_param,i*self.npacks+p_idx)
                     else:
                         # Comparison to the next pack of the same parameter
-                        yield (m,param,p_idx),(m,param,(p_idx+1) % self.npacks) 
+                        print('Compare',p_idx,'to',p_idx+len(self.parameter_names)*self.npacks)
+                        yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks) 
 
     def iterator_transitions_endcomparison(self):
         start_param = self.parameter_names[0]
         end_param = self.parameter_names[-1]
         for m in self.generator_names:
-            for param in self.parameter_names:
+            for i,param in enumerate(self.parameter_names):
                 for p_idx in range(self.npacks):
                     # Comparison to start
                     if param!=end_param:
-                        yield (m,param,p_idx),(m,end_param,p_idx) 
+                        yield (m,param,p_idx),(m,start_param,i*self.npacks+p_idx) 
                     else:
                         # Comparison to the next pack of the same parameter
-                        yield (m,param,p_idx),(m,param,(p_idx+1) % self.npacks) 
+                        yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks)
 
