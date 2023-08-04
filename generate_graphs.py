@@ -192,7 +192,18 @@ def interpolate_ER_GRG_torus(step,p=p,n=n,d=2, return_igraph=True):
     coords = dict(zip(range(n), np.random.rand(n, d)))
     edges = [
         (i, j) for i, j in it.combinations(range(n), 2)
-        if (torusdist(coords[i], coords[j]) < r and np.random.rand()<step) or (torusdist(coords[i], coords[j]) > r and np.random.rand()<1-step)
+        if (torusdist(coords[i], coords[j]) < r and np.random.rand()<p+step*(1-p)) or (torusdist(coords[i], coords[j]) > r and np.random.rand()<p*(1-step))
+    ]
+    if return_igraph:
+        return edges2ig(n, edges)
+    return edges
+
+def interpolate_ER_GCG(step,p=p,n=n, return_igraph=True):
+    thres_angle = np.pi-p2thres_angle(d=2, p=p)
+    coords = dict(zip(range(n), np.random.normal(size=(n, 3))))
+    edges = [
+        (i, j) for i, j in it.combinations(range(n), 2)
+        if (angle(coords[i], coords[j]) > thres_angle) and (np.random.rand()<p+step*(1-p)) or (angle(coords[i], coords[j]) < thres_angle) and (np.random.rand()<p-step*p)
     ]
     if return_igraph:
         return edges2ig(n, edges)
