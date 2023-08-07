@@ -62,7 +62,7 @@ for interpolator in interpolators:
     g_file = f'{g_name}_graphs.json'
     start_vals_file = f'{g_name}_start_vals.tsv'
     start_mmds_file = f'{g_name}_start_mmds.json'
-    start_spearmans_file = f'{g_name}_end_spearmans.tsv'
+    start_spearmans_file = f'{g_name}_start_spearmans.tsv'
     end_vals_file = f'{g_name}_end_vals.tsv'
     end_mmds_file = f'{g_name}_end_mmds.json'
     end_spearmans_file = f'{g_name}_end_spearmans.tsv'

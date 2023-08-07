@@ -24,8 +24,9 @@ def generate_ER(n=n,p=p):
 def generate_inhomogeneous(n=n,p=p,pl_exp=3):
     gamma = 1/(pl_exp-1)
     fitness=np.exp(np.random.exponential(gamma,n))
-    # The ig generator requires a fixed number of edges. We sample a Poisson number of edges, so that it resembles ER/PPM/GRG.
-    n_edges=np.random.poisson(p*n*(n-1)/2)
+    # The ig generator requires a fixed number of edges. We sample a Binomial number of edges, so that it resembles ER/PPM/GRG.
+    n_edges=np.random.binomial(n*(n-1)/2,p)
+    print('Generating inhomogeneous with exponent',pl_exp,'and',n_edges,'edges')
     return ig.Graph.Static_Fitness(n_edges,fitness)
 
 def interpolate_ER_inhomogeneous(step,n=n,p=p):
