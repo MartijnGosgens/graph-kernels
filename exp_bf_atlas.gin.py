@@ -79,3 +79,5 @@ for k in kernel_vals:
         pairs[k].append((names[i],names[j]))
 with open('pairs_gin.json', 'w') as ofh:
   print(json.dumps(pairs), file=ofh)
+
+print(pairs('Gin'))
