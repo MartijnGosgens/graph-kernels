@@ -55,7 +55,9 @@ def calc_step_mmd_spearman(mmds):
         for m in steps_dict.keys()
     }
 
-load = False
+load = True
+perform_start = False
+perform_end = True
 for interpolator in interpolators:
     g_name = interpolator.__name__
     print('start',g_name)
@@ -81,46 +83,18 @@ for interpolator in interpolators:
         experiment.generate_graphs(g_file,npacks_dict=npacks_dict)
         print('Generated graphs')
     
-    start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),kernels=selected_kernels,save_name=start_vals_file,save_mmds_name=start_mmds_file)
-    #start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
-    with open(start_spearmans_file,'w') as save_file:
-        for k,kmmds in start_mmds.items():
-            for m,s in calc_step_mmd_spearman(kmmds).items():
-                print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
+    if perform_start:
+        start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),kernels=selected_kernels,save_name=start_vals_file,save_mmds_name=start_mmds_file)
+        #start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
+        with open(start_spearmans_file,'w') as save_file:
+            for k,kmmds in start_mmds.items():
+                for m,s in calc_step_mmd_spearman(kmmds).items():
+                    print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
 
-    print('end',g_name)
-    end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),kernels=selected_kernels,save_name=end_vals_file,save_mmds_name=end_mmds_file)
-    with open(end_spearmans_file,'w') as save_file:
-        for k,kmmds in end_mmds.items():
-            for m,s in calc_step_mmd_spearman(kmmds).items():
-                print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
-
-'''print('start experiment')
-experiment = Experiment(interpolators_just_one,parameters,npacks,sample_size=nsamples)
-npacks_dict = npacks_dict={
-    interpolator.__name__: {
-        tuple2str(parameters[0].values()): npacks*(nsteps+1),
-        tuple2str(parameters[-1].values()): npacks*(nsteps+1),
-    }
-    for interpolator in interpolators 
-}
-print(npacks_dict)
-experiment.generate_graphs('interpolation_graphs_just_one.json',npacks_dict=npacks_dict)
-print('Generated graphs')
-#experiment.load_graphs('interpolation_graphs_just_one.json')
-#print('loaded graphs')
-start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),kernels=selected_kernels,save_name='interpolation_start_vals.tsv',save_mmds_name='interpolation_start_mmds.json')
-#start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
-with open('spearmans_start.tsv','w') as save_file:
-    for k,kmmds in start_mmds.items():
-        for m,s in calc_step_mmd_spearman(kmmds).items():
-            print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
-
-print('end experiment')
-end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),kernels=selected_kernels,save_name='interpolation_end_vals.tsv',save_mmds_name='interpolation_end_mmds.json')
-with open('spearmans_end.tsv','w') as save_file:
-    for k,kmmds in end_mmds.items():
-        for m,s in calc_step_mmd_spearman(kmmds).items():
-            print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
-'''
+    if perform_end:
+        end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),kernels=selected_kernels,save_name=end_vals_file,save_mmds_name=end_mmds_file)
+        with open(end_spearmans_file,'w') as save_file:
+            for k,kmmds in end_mmds.items():
+                for m,s in calc_step_mmd_spearman(kmmds).items():
+                    print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
 
