@@ -69,17 +69,18 @@ for interpolator in interpolators:
     end_mmds_file = f'{g_name}_end_mmds.json'
     end_spearmans_file = f'{g_name}_end_spearmans.tsv'
     experiment = Experiment([interpolator],parameters,npacks,sample_size=nsamples)
-    npacks_dict = npacks_dict={
-        interpolator.__name__: {
-            tuple2str(parameters[0].values()): npacks*(nsteps+1),
-            tuple2str(parameters[-1].values()): npacks*(nsteps+1),
-        }
-        for interpolator in interpolators 
-    }
+    
     if load:
         experiment.load_graphs(g_file)
         print('loaded graphs')
     else:
+        npacks_dict = {}
+        for interpolator in interpolators:
+            npacks_dict[interpolator.__name__] = {}
+            if perform_start:
+                npacks_dict[interpolator.__name__][tuple2str(parameters[0].values())] = npacks*(nsteps+1)
+            if perform_end:
+                npacks_dict[interpolator.__name__][tuple2str(parameters[-1].values())] = npacks*(nsteps+1)
         experiment.generate_graphs(g_file,npacks_dict=npacks_dict)
         print('Generated graphs')
     

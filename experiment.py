@@ -93,11 +93,12 @@ class Experiment:
         self.generators = generators
         self.generator_names = list(map(lambda g: g.__name__, generators))
         self.parameters = parameters
-        self.parameter_names = list(map(lambda param: tuple2str(param.values()),parameters))
+        if parameters is not None:
+            self.parameter_names = list(map(lambda param: tuple2str(param.values()),parameters))
         self.npacks = npacks
         self.sample_size = sample_size
 
-    def generate_pack(self,generator,sample_size,parameter=None):
+    def generate_pack(self,generator,sample_size,parameter={}):
         return [
             ig2edges(generator(**parameter))
             for _ in range(sample_size)
@@ -191,13 +192,13 @@ class Experiment:
                     
     def iterator_compare_generators(self):
         # For each two models, we compare the two packs of the same index
-        for m1,m2 in it.combinations(self.generator_names):
-            for p_idx in range(self.npacks):
+        for m1,m2 in it.combinations(self.generator_names,2):
+            for p_idx in range(int(self.npacks/3)):
                 yield (m1,p_idx),(m2,p_idx)
         # For each model, we also compare each pack to the next pack
         for m in self.generator_names:
-            for p_idx in range(self.npacks):
-                yield (m,p_idx),(m,(p_idx+1) % self.npacks)
+            for p_idx in range(int(self.npacks/3)):
+                yield (m,int(self.npacks/3)+p_idx),(m,int(self.npacks*2/3)+p_idx)
     
     def iterator_transitions(self):
         start_param = self.parameter_names[0]
@@ -224,20 +225,20 @@ class Experiment:
                         print('Compare',p_idx,'to',i*self.npacks+p_idx)
                         yield (m,param,p_idx),(m,start_param,i*self.npacks+p_idx)
                     else:
-                        # Comparison to the next pack of the same parameter
+                        # Compare the first self.npacks of startparam to the last self.npacks of startparam
+                        # Note that they haven't been used in the comparison to intermediate params
                         print('Compare',p_idx,'to',p_idx+len(self.parameter_names)*self.npacks)
                         yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks) 
 
     def iterator_transitions_endcomparison(self):
-        start_param = self.parameter_names[0]
         end_param = self.parameter_names[-1]
         for m in self.generator_names:
             for i,param in enumerate(self.parameter_names):
                 for p_idx in range(self.npacks):
                     # Comparison to start
                     if param!=end_param:
-                        yield (m,param,p_idx),(m,start_param,i*self.npacks+p_idx) 
+                        yield (m,param,p_idx),(m,end_param,i*self.npacks+p_idx) 
                     else:
-                        # Comparison to the next pack of the same parameter
+                        # Compare the first self.npacks of endparam to the last self.npacks of endparam
+                        # Note that they haven't been used in the comparison to intermediate params
                         yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks)
-

@@ -3,11 +3,11 @@ from collections import defaultdict
 
 interpolators = ['interpolate_ER_inhomogeneous','interpolate_ER_triangular', 'interpolate_ER_PPM', 'interpolate_ER_GRG_torus', 'interpolate_GRG_torus_circle', 'interpolate_ER_GCG']
 
-def tsv2dict(tsv_file):
+def tsv2dict(tsv_file,invert=False):
     output = {}
     bests = -1
     for line in tsv_file.readlines():
-        output[line.split('\t')[1]] = float(line.split('\t')[-1].strip())
+        output[line.split('\t')[1]] = float(line.split('\t')[-1].strip()) * (-1 if invert else 1)
     return output,max(output,key=output.get)
 
 def interpolator2label(interpolator):
@@ -17,12 +17,14 @@ def interpolator2label(interpolator):
 results = defaultdict(dict)
 best_start = {}
 best_end = {}
+hist = []
 for interpolator in interpolators:
     with open(f'{interpolator}_start_spearmans.tsv') as startfile, open(f'{interpolator}_end_spearmans.tsv') as endfile:
         start_d,best_start[interpolator]=tsv2dict(startfile)
-        end_d,best_end[interpolator]=tsv2dict(endfile)
+        end_d,best_end[interpolator]=tsv2dict(endfile,invert=True)
         for k in start_d.keys():
             results[k][interpolator] = (start_d[k],end_d[k])
+            hist.append(start_d[k]-end_d[k])
 with open('output.txt','w') as outfile:
     print(r'\begin{tabular}{c|'+'c'*len(interpolators)+r'}',file=outfile)
     print('\t&\t'.join(['']+[
