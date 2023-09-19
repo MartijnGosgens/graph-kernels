@@ -9,7 +9,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
-from other_kernels import NetLSD,Gin
+from other_kernels import NetLSD,Gin,GraphletSampling4
 '''
     The kernels need not be grakel kernels, but they need to follow the same interface. That is, it should be a class
     (so that it has a .__name__), it's constructor needs to take the boolean parameter normalize and it needs to
@@ -24,14 +24,14 @@ from time import time
 
 selected_kernels = (
      #RandomWalk, # ERRRs,
-     #GraphletSampling,
+     GraphletSampling,
      NetLSD,
      Gin,
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
      WeisfeilerLehman,
-     Propagation,
+     # Propagation,
      OddSth,
      WeisfeilerLehmanOptimalAssignment,
      NeighborhoodSubgraphPairwiseDistance,
@@ -40,7 +40,10 @@ selected_kernels = (
 
 kernel_params = defaultdict(dict)
 kernel_params[GraphletSampling] = {
-    'sampling': {'n_samples': 500}
+    'k': 3
+}
+kernel_params[GraphletSampling4] = {
+    'k': 4
 }
 kernel_params[RandomWalk] = {
     'lamda': 0.1, # not 'lambda' (typo in grakel?)
@@ -78,8 +81,9 @@ def calc_mmd(vals,pack1size=None):
     idxs1 = range(pack1size)
     idxs2 = range(pack1size,pack1size+pack2size)
     return (
-        (2/(pack1size*(pack1size-1)))*sum([vals[i,j] for i,j in it.combinations(idxs1,2)])
-        +(2/(pack2size*(pack2size-1)))*sum([vals[i,j] for i,j in it.combinations(idxs2,2)])
+        1/pack1size+1/pack2size
+        +(2/(pack1size**2))*sum([vals[i,j] for i,j in it.combinations(idxs1,2)])
+        +(2/(pack2size**2))*sum([vals[i,j] for i,j in it.combinations(idxs2,2)])
         -(2/(pack1size*pack2size))*sum(vals[i,j] for i,j in it.product(idxs1,idxs2))
     )
 
@@ -177,6 +181,7 @@ class Experiment:
                     for i,j in it.combinations(it2,2):
                         print("\t".join(map(str, ['#', k.__name__]+list(locator2)+list(locator2)+[i-len(pack1),j-len(pack1),vals[i,j]])), flush=True,file=save_file)
                     mmd=calc_mmd(vals,self.sample_size)
+                    print(k.__name__,'pack',locator1,locator2,'took',time()-start_time,'and resulted in mmd =',mmd)
                     mmds[k.__name__][locator1[:-1],locator2[:-1]].append(mmd)
                     print("\t".join(['#',k.__name__,tuple2str(locator1),tuple2str(locator2),str(mmd)]),flush=True,file=mmds_tsv)
         if save_mmds_name is not None:

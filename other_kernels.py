@@ -1,6 +1,7 @@
 
 import numpy as np
 from generate_graphs import grakel2nx
+from grakel.kernels import GraphletSampling
 
 class Kernel:
     def __init__(self,normalize=True):
@@ -59,4 +60,6 @@ class Gin(Kernel):
         self.embed = lambda x: ev._GINMetric__get_activations_single_dataset([dgl.DGLGraph(x)])[0]
         self.embed_dataset = lambda x: ev._GINMetric__get_activations_single_dataset(list(map(dgl.DGLGraph,x)))
 
-    
+class  GraphletSampling4(GraphletSampling):
+    pass
+

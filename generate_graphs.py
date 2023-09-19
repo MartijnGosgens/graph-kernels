@@ -60,7 +60,7 @@ def closure_graph(n,p,p1):
 
 # Step needs to be in the interval [0,1], so that p_in=(1+step)*p_out
 def interpolate_ER_PPM(step,p=p,n=n,k=2):
-    in_out_ratio = 1+step
+    in_out_ratio = 1+5*step
     p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
     p_in = p_out*in_out_ratio
     return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)
@@ -256,7 +256,9 @@ def edges2nx(e):
 
 def edges2grakel(g,N=n):
     from grakel import Graph
-    return Graph(list(map(tuple,g)), node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in map(tuple,g)})
+    # Grakel assumes by default that graphs are directed
+    edges = list(map(tuple,g))+list(map(tuple,map(reversed,g)))
+    return Graph(edges, node_labels={i: 'A' for i in range(N)}, edge_labels={e: 'B' for e in edges})
 
 def grakel2nx(g):
     return nx.from_edgelist(g.get_edges())

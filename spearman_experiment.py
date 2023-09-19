@@ -17,7 +17,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
-from other_kernels import NetLSD,Gin
+from other_kernels import NetLSD,Gin,GraphletSampling4
 import numpy as np
 
 fast_kernels = (
@@ -34,8 +34,8 @@ fast_kernels = (
      # SvmTheta, # ERRR
     )
 just_netlsd_gin = (Gin,NetLSD)
-
-interpolators = [interpolate_ER_GCG,interpolate_ER_PPM,interpolate_ER_GRG_torus,interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle,interpolate_ER_triangular]
+just_graphlet4 = [GraphletSampling4]
+interpolators = [interpolate_ER_GCG, interpolate_ER_inhomogeneous, interpolate_ER_triangular,interpolate_ER_GRG_torus, interpolate_GRG_torus_circle,interpolate_ER_PPM]
 
 nsteps = 11
 steps = np.linspace(0,1,nsteps)
@@ -56,7 +56,7 @@ def calc_step_mmd_spearman(mmds):
     }
 
 load = True
-perform_start = False
+perform_start = True
 perform_end = True
 for interpolator in interpolators:
     g_name = interpolator.__name__
@@ -77,15 +77,13 @@ for interpolator in interpolators:
         npacks_dict = {}
         for interpolator in interpolators:
             npacks_dict[interpolator.__name__] = {}
-            if perform_start:
-                npacks_dict[interpolator.__name__][tuple2str(parameters[0].values())] = npacks*(nsteps+1)
-            if perform_end:
-                npacks_dict[interpolator.__name__][tuple2str(parameters[-1].values())] = npacks*(nsteps+1)
+            npacks_dict[interpolator.__name__][tuple2str(parameters[0].values())] = npacks*(nsteps+1)
+            npacks_dict[interpolator.__name__][tuple2str(parameters[-1].values())] = npacks*(nsteps+1)
         experiment.generate_graphs(g_file,npacks_dict=npacks_dict)
         print('Generated graphs')
     
     if perform_start:
-        start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),kernels=selected_kernels,save_name=start_vals_file,save_mmds_name=start_mmds_file)
+        start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),save_name=start_vals_file,kernels=just_graphlet4,save_mmds_name=start_mmds_file)
         #start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
         with open(start_spearmans_file,'w') as save_file:
             for k,kmmds in start_mmds.items():
@@ -93,7 +91,7 @@ for interpolator in interpolators:
                     print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
 
     if perform_end:
-        end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),kernels=selected_kernels,save_name=end_vals_file,save_mmds_name=end_mmds_file)
+        end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),save_name=end_vals_file,kernels=just_graphlet4,save_mmds_name=end_mmds_file)
         with open(end_spearmans_file,'w') as save_file:
             for k,kmmds in end_mmds.items():
                 for m,s in calc_step_mmd_spearman(kmmds).items():
