@@ -38,14 +38,14 @@ for ff in glob("graphstats/*_degrees.json"):
 seen = set()
 for ff in glob("graphstats/*_spaths.json"):
     print(ff)
-    q = ff.replace('_torus', '-torus').split('_')
+    q = ff.replace('\\','_').replace('/','_').replace('_torus', '-torus').split('_')
     data = json.loads(open(ff).read())
-    now = q[1]
-    if now not in seen:
-        draw_distr(keystoint(data[0]), f'Shortest path distribution / {q[1]}', f'spaths_{now}.png')
-        seen.add(now)
     now = q[2]
     if now not in seen:
-        draw_distr(keystoint(data[-1]), f'Shortest path distribution / {q[1]}', f'spaths_{now}.png')
+        draw_distr(keystoint(data[0]), f'Shortest path distribution / {now}', f'spaths_{now}.png')
+        seen.add(now)
+    now = q[3]
+    if now not in seen:
+        draw_distr(keystoint(data[-1]), f'Shortest path distribution / {now}', f'spaths_{now}.png')
         seen.add(now)
     
