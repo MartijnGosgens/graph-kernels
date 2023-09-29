@@ -23,19 +23,17 @@ from collections import defaultdict
 from time import time
 
 selected_kernels = (
-     #RandomWalk, # ERRRs,
      GraphletSampling,
+     GraphletSampling4,
      NetLSD,
      Gin,
      PyramidMatch,
      NeighborhoodHash,
      ShortestPath,
      WeisfeilerLehman,
-     # Propagation,
      OddSth,
      WeisfeilerLehmanOptimalAssignment,
      NeighborhoodSubgraphPairwiseDistance,
-     # SvmTheta, # ERRR
     )
 
 kernel_params = defaultdict(dict)
