@@ -1,4 +1,6 @@
 from generate_graphs import (interpolate_ER_triangular,
+                             interpolate_ER_density,
+                             interpolate_ER_size,
                              interpolate_ER_PPM,
                              interpolate_ER_GRG_torus,
                              interpolate_ER_inhomogeneous,
@@ -31,7 +33,7 @@ fast_kernels = (
     )
 just_netlsd_gin = (Gin,NetLSD)
 just_graphlet4 = [GraphletSampling4]
-interpolators = [interpolate_ER_GCG, interpolate_ER_inhomogeneous, interpolate_ER_triangular,interpolate_ER_GRG_torus, interpolate_GRG_torus_circle,interpolate_ER_PPM]
+interpolators = [interpolate_ER_density,interpolate_ER_size,interpolate_ER_GCG, interpolate_ER_inhomogeneous, interpolate_ER_triangular,interpolate_ER_GRG_torus, interpolate_GRG_torus_circle,interpolate_ER_PPM]
 
 nsteps = 11
 steps = np.linspace(0,1,nsteps)

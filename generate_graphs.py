@@ -65,6 +65,12 @@ def interpolate_ER_PPM(step,p=p,n=n,k=2):
     p_in = p_out*in_out_ratio
     return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)
 
+def interpolate_ER_density(step,p_start=p,n=n):
+    return nx2ig(nx.erdos_renyi_graph(n,p_start*(1+step)))
+
+def interpolate_ER_size(step,p=p,n_start=n):
+    return nx2ig(nx.erdos_renyi_graph(int(n*(1+step)),p))
+
 def interpolate_ER_triangular(step,p=p,n=n):
     p1 = p*(1-step/2)
     return closure_graph(n,p,p1)
