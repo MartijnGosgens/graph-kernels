@@ -1,6 +1,5 @@
 from generate_graphs import (interpolate_ER_triangular,
                              interpolate_ER_density,
-                             interpolate_ER_size,
                              interpolate_ER_PPM,
                              interpolate_ER_GRG_torus,
                              interpolate_ER_inhomogeneous,
@@ -19,7 +18,7 @@ from grakel.kernels import (RandomWalk,
                             OddSth,
                             WeisfeilerLehmanOptimalAssignment,
                             NeighborhoodSubgraphPairwiseDistance)
-from other_kernels import NetLSD,Gin,GraphletSampling4
+from other_kernels import NetLSD,Gin,GraphletSampling4,DegreeHistogram
 import numpy as np
 
 fast_kernels = (
@@ -113,10 +112,10 @@ for interpolator in interpolators:
             npacks_dict[interpolator.__name__][tuple2str(parameters[0].values())] = npacks*(nsteps+1)
             npacks_dict[interpolator.__name__][tuple2str(parameters[-1].values())] = npacks*(nsteps+1)
         experiment.generate_graphs(g_file,npacks_dict=npacks_dict)
-        print('Generated graphs')
+        print('Generated graphs',flush=True)
     
     if perform_start:
-        start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),save_name=start_vals_file,kernels=just_graphlet4,save_mmds_name=start_mmds_file)
+        start_mmds=experiment.apply_kernels(experiment.iterator_transitions_startcomparison(),save_name=start_vals_file,save_mmds_name=start_mmds_file,kernels=selected_kernels)
         #start_mmds=experiment.load_mmds('interpolation_start_mmds.json')
         with open(start_spearmans_file,'w') as save_file:
             for k,kmmds in start_mmds.items():
@@ -124,7 +123,7 @@ for interpolator in interpolators:
                     print("\t".join(['#',k,m,str(s)]),flush=True,file=save_file)
 
     if perform_end:
-        end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),save_name=end_vals_file,kernels=just_graphlet4,save_mmds_name=end_mmds_file)
+        end_mmds=experiment.apply_kernels(experiment.iterator_transitions_endcomparison(),save_name=end_vals_file,save_mmds_name=end_mmds_file,kernels=selected_kernels)
         with open(end_spearmans_file,'w') as save_file:
             for k,kmmds in end_mmds.items():
                 for m,s in calc_step_mmd_spearman(kmmds).items():

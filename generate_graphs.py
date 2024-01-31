@@ -58,7 +58,7 @@ def closure_graph(n,p,p1):
     G1.add_edges_from([e for e in wedges if np.random.rand()<p2])
     return nx2ig(G1)
 
-# Step needs to be in the interval [0,1], so that p_in=(1+step)*p_out
+# Step needs to be in the interval [0,1], so that p_in=(1+step*5.6)*p_out
 def interpolate_ER_PPM(step,p=p,n=n,k=2):
     in_out_ratio = 1+5.6*step
     p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
@@ -67,9 +67,6 @@ def interpolate_ER_PPM(step,p=p,n=n,k=2):
 
 def interpolate_ER_density(step,p_start=p,n=n):
     return nx2ig(nx.erdos_renyi_graph(n,p_start*(1+step)))
-
-def interpolate_ER_size(step,p=p,n_start=n):
-    return nx2ig(nx.erdos_renyi_graph(int(n*(1+step)),p))
 
 def interpolate_ER_triangular(step,p=p,n=n):
     p1 = p*(1-step/2)
@@ -271,6 +268,16 @@ def edges2grakel(g,N=n):
 
 def grakel2nx(g):
     return nx.from_edgelist(g.get_edges())
+
+def grakel2degree_grakel(g):
+    from collections import Counter
+    from grakel import Graph
+    edges = g.get_edges()
+    N = len(list(g.get_vertices()))
+    stubs = sum(map(list,edges),[])
+    deg = Counter(stubs)
+    # Note that grakel is undirected by default, so we count every edge twice. Hence, we divide the degrees by 2.
+    return Graph(edges, node_labels={i: deg[i]/2 for i in range(N)}, edge_labels={e: 'B' for e in edges})
 
 def ig2nx(g):
     return edges2nx(ig2edges(g))

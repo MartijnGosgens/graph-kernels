@@ -1,7 +1,7 @@
 
 import numpy as np
-from generate_graphs import grakel2nx
-from grakel.kernels import GraphletSampling
+from generate_graphs import grakel2nx,grakel2degree_grakel
+from grakel.kernels import GraphletSampling,VertexHistogram
 
 class Kernel:
     def __init__(self,normalize=True):
@@ -62,4 +62,12 @@ class Gin(Kernel):
 
 class  GraphletSampling4(GraphletSampling):
     pass
+
+class DegreeHistogram(Kernel):
+    def __init__(self,normalize=True):
+        self.k = VertexHistogram(normalize=normalize)
+
+    def fit_transform(self,pack):
+        pack = map(grakel2degree_grakel,pack)
+        return self.k.fit_transform(pack)
 
