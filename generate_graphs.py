@@ -60,7 +60,9 @@ def closure_graph(n,p,p1):
 
 # Step needs to be in the interval [0,1], so that p_in=(1+step*5.6)*p_out
 def interpolate_ER_PPM(step,p=p,n=n,k=2):
-    in_out_ratio = 1+5.6*step
+    m = p*n*(n-1)/2
+    c = 2*(m+1-n)/(n-2)
+    in_out_ratio = 1+c*step
     p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
     p_in = p_out*in_out_ratio
     return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)

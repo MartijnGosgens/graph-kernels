@@ -1,5 +1,4 @@
-from generate_graphs import (interpolate_ER_triangular,
-                             interpolate_ER_density,
+from generate_graphs import (interpolate_ER_density,
                              interpolate_ER_PPM,
                              interpolate_ER_GRG_torus,
                              interpolate_ER_inhomogeneous,
