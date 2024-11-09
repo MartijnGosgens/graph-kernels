@@ -1,4 +1,4 @@
-from generate_graphs import ig2edges,edges2grakel
+from generate_graphs import ig2edges,edges2grakel,grakel2degree_grakel
 from grakel.kernels import (RandomWalk,
                             GraphletSampling,
                             PyramidMatch,
@@ -6,9 +6,9 @@ from grakel.kernels import (RandomWalk,
                             ShortestPath,
                             WeisfeilerLehman,
                             Propagation,
-                            OddSth,
+                            #OddSth,
                             WeisfeilerLehmanOptimalAssignment,
-                            NeighborhoodSubgraphPairwiseDistance)
+                            NeighborhoodSubgraphPairwiseDistance,VertexHistogram)
 from other_kernels import NetLSD,Gin,GraphletSampling4
 '''
     The kernels need not be grakel kernels, but they need to follow the same interface. That is, it should be a class
@@ -31,7 +31,7 @@ selected_kernels = (
      NeighborhoodHash,
      ShortestPath,
      WeisfeilerLehman,
-     OddSth,
+     #OddSth,
      WeisfeilerLehmanOptimalAssignment,
      NeighborhoodSubgraphPairwiseDistance,
     )
@@ -68,6 +68,7 @@ def nested_map(iterator,func,target_type=None,depth=-1):
     return func(iterator)
 
 def locate(search_dict,locator_tuple):
+    #print(locator_tuple,len(search_dict) if type(search_dict) is list else list(search_dict.keys()))
     if len(locator_tuple)==1:
         return search_dict[locator_tuple[0]]
     return locate(search_dict[locator_tuple[0]],locator_tuple[1:])
@@ -179,7 +180,7 @@ class Experiment:
                     for i,j in it.combinations(it2,2):
                         print("\t".join(map(str, ['#', k.__name__]+list(locator2)+list(locator2)+[i-len(pack1),j-len(pack1),vals[i,j]])), flush=True,file=save_file)
                     mmd=calc_mmd(vals,self.sample_size)
-                    print(k.__name__,'pack',locator1,locator2,'took',time()-start_time,'and resulted in mmd =',mmd)
+                    print(k.__name__,'pack',locator1,locator2,'took',time()-start_time,'and resulted in mmd =',mmd,flush=True)
                     mmds[k.__name__][locator1[:-1],locator2[:-1]].append(mmd)
                     print("\t".join(['#',k.__name__,tuple2str(locator1),tuple2str(locator2),str(mmd)]),flush=True,file=mmds_tsv)
         if save_mmds_name is not None:
@@ -245,3 +246,11 @@ class Experiment:
                         # Compare the first self.npacks of endparam to the last self.npacks of endparam
                         # Note that they haven't been used in the comparison to intermediate params
                         yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks)
+
+    def iterator_transitions_grid(self):
+        start_param = self.parameter_names[0]
+        m = self.generator_names[0]
+        for (i1,param1),(i2,param2) in it.product(enumerate(self.parameter_names),enumerate(self.parameter_names)):
+            for p_idx in range(self.npacks):
+                # Comparison to start
+                yield (m,param1,p_idx),(m,param2,p_idx)

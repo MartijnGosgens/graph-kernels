@@ -46,7 +46,16 @@ class NetLSD(Kernel):
         import netlsd
         self.embed = netlsd.heat
         self.embed_dataset = None
+
+
+class NetLSDWave(Kernel):
+    def __init__(self, normalize=True):
+        super().__init__(normalize)
+        import netlsd
+        self.embed = netlsd.wave
+        self.embed_dataset = None
         
+
 class Gin(Kernel):
     def __init__(self, normalize=True):
         super().__init__(normalize)

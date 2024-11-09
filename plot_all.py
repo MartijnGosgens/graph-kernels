@@ -14,11 +14,11 @@ from grakel.kernels import GraphletSampling
 from collections import defaultdict
 import pandas as pd
 
-scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_start_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
-plt.savefig('scatter_ER_inhomogeneous_start.jpg',bbox_inches='tight')
+#scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_start_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
+#plt.savefig('scatter_ER_inhomogeneous_start.svg',bbox_inches='tight')
 
-scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_end_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
-plt.savefig('scatter_ER_inhomogeneous_end.jpg',bbox_inches='tight')
+#scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_end_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
+#plt.savefig('scatter_ER_inhomogeneous_end.svg',bbox_inches='tight')
 
 
 #### DEGREE PLOT
@@ -27,20 +27,21 @@ interpolators = [interpolate_ER_triangular, interpolate_ER_PPM, interpolate_ER_G
 
 transition2name = {
     interpolate_ER_inhomogeneous: r'ER$\leftrightarrow$CL',
-    interpolate_ER_triangular: r'ER$\leftrightarrow$Triadic',
+    interpolate_ER_triangular: r'ER$\leftrightarrow$Dense',
     interpolate_ER_PPM: r'ER$\leftrightarrow$PP',
     interpolate_ER_GRG_torus: r'ER$\leftrightarrow$Torus',
     interpolate_GRG_torus_circle: r'Torus$\leftrightarrow$Circle',
     interpolate_ER_GCG: r'ER$\leftrightarrow$SC',
 }
+
 packvar = lambda pack: np.array(sum([
         [d for _,d in G.degree()]
         for G in pack
     ],[])).var()
-packtransitivity = lambda pack: sum(map(nx.transitivity,pack))/len(pack)
+#packtransitivity = lambda pack: sum(map(nx.transitivity,pack))/len(pack)
 
 fig,ax = plt.subplots()
-for interpolator in interpolators:
+for interpolator,interpolator_name in transition2name.items():
     file_name = f'{interpolator.__name__}_graphs.json'
     with open(file_name) as f:
         graphs = json.load(f)
@@ -53,11 +54,11 @@ for interpolator in interpolators:
     ax.plot(list(firstpacks.keys()),[
         packvar(pack)
         for pack in firstpacks.values() 
-    ], label=transition2name[interpolator])
+    ], label=interpolator_name)
     ax.set_xlabel(r'$\theta$')
     ax.set_ylabel('Degree variance')
 plt.legend()
-plt.savefig('Degree variance.jpg',bbox_inches='tight')
+plt.savefig('Degree variance.svg',bbox_inches='tight')
 
 #### GRAPHLET COUNTS
 
@@ -66,11 +67,11 @@ load=True
 graphlet_size = 3
 normalize = False
 
-interpolators = [interpolate_ER_triangular, interpolate_ER_PPM, interpolate_ER_GRG_torus, interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle, interpolate_ER_GCG]
+interpolators = [interpolate_ER_density, interpolate_ER_PPM, interpolate_ER_GRG_torus, interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle, interpolate_ER_GCG]
 
 transition2name = {
     interpolate_ER_inhomogeneous: r'ER$\leftrightarrow$CL',
-    interpolate_ER_triangular: r'ER$\leftrightarrow$Triadic',
+    interpolate_ER_density: r'ER$\leftrightarrow$Dense',
     interpolate_ER_PPM: r'ER$\leftrightarrow$PP',
     interpolate_ER_GRG_torus: r'ER$\leftrightarrow$Torus',
     interpolate_GRG_torus_circle: r'Torus$\leftrightarrow$Circle',
@@ -80,12 +81,22 @@ transition2name = {
 model2location = {
     'ER': (interpolate_ER_inhomogeneous,'0.0'),
     'CL': (interpolate_ER_inhomogeneous,'1.0'),
-    'Triadic': (interpolate_ER_triangular,'1.0'),
+    'Dense': (interpolate_ER_density,'1.0'),
     'PP': (interpolate_ER_PPM,'1.0'),
     'Torus': (interpolate_ER_GRG_torus,'1.0'),
     'Circle': (interpolate_GRG_torus_circle,'1.0'),
     'SC': (interpolate_ER_GCG,'1.0'),
 }
+
+for interpolator,name in transition2name.items():
+    start_mmds = load_mmds(interpolator.__name__+'_start_mmds.json')
+    end_mmds = load_mmds(interpolator.__name__+'_end_mmds.json')
+    for k in start_mmds.keys():
+        scatter_mmds(start_mmds[k],transition_name=name)
+        plt.savefig('scatter_'+interpolator.__name__+'_start_'+k+'.svg',bbox_inches='tight')
+    for k in end_mmds.keys():
+        scatter_mmds(end_mmds[k],transition_name=name)
+        plt.savefig('scatter_'+interpolator.__name__+'_end_'+k+'.svg',bbox_inches='tight')
 
 def compute_graphlet_counts(model2location=model2location,save_name='pack1_graphlets.json'):
     graphlet2model2counts = defaultdict(lambda: defaultdict(list))
@@ -157,5 +168,5 @@ if normalize:
 else:
     ax.set_ylabel('Graphlet count')
 
-plt.savefig(f'graphlet_histograph_k{graphlet_size}_{"un" if not normalize else ""}normalized.jpg',bbox_inches='tight')
+plt.savefig(f'graphlet_histograph_k{graphlet_size}_{"un" if not normalize else ""}normalized.svg',bbox_inches='tight')
     
