@@ -5,7 +5,8 @@ import networkx as nx
 import math
 
 # Set parameters
-n = 50
+large = False
+n = 1000 if large else 50 # 50 for small and 1000 for large graphs
 m = 4
 # PA will have average degree 7.6
 mean_deg = 7.6
@@ -58,17 +59,14 @@ def closure_graph(n,p,p1):
     return nx2ig(G1)
 
 # Step needs to be in the interval [0,1], so that p_in=(1+step*5.6)*p_out
-def interpolate_ER_PPM(step,p=p,n=n,k=2):
-    m = p*n*(n-1)/2
-    d = 2*m/n
-    c = 2*(m+1-n)/(n-2)
-    in_out_ratio = 1+c*step
-    p_out = 2*d / (n+in_out_ratio * (n-2))
+def interpolate_ER_PPM(step,p=p,n=n):
+    in_out_ratio = 1+5.6*step
+    p_out = 2*mean_deg / (n+in_out_ratio * (n-2))
     p_in = p_out*in_out_ratio
-    return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=k)
+    return generate_PPM(n=n,p_in=p_in,p_out=p_out,k=2)
 
-def interpolate_ER_density(step,p=p,n=n):
-    return nx2ig(nx.erdos_renyi_graph(n,p*(1+step)))
+def interpolate_ER_density(step,p_start=p,n=n):
+    return nx2ig(nx.erdos_renyi_graph(n,p_start*(1+step)))
 
 def interpolate_ER_triangular(step,p=p,n=n):
     p1 = p*(1-step/2)
@@ -262,7 +260,7 @@ def ig2edges(g):
     return [(e.source, e.target) for e in g.es]
 
 
-def edges2nx(e,n=n):
+def edges2nx(e):
     G = nx.Graph()
     G.add_nodes_from(range(n))
     G.add_edges_from(e)
@@ -287,8 +285,8 @@ def grakel2degree_grakel(g):
     # Note that grakel is undirected by default, so we count every edge twice. Hence, we divide the degrees by 2.
     return Graph(edges, node_labels={i: deg[i]/2 for i in range(N)}, edge_labels={e: 'B' for e in edges})
 
-def ig2nx(g,n=n):
-    return edges2nx(ig2edges(g),n=n)
+def ig2nx(g):
+    return edges2nx(ig2edges(g))
 
 
 def nx2stats(ng):

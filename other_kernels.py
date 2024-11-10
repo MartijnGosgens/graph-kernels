@@ -1,4 +1,3 @@
-
 import numpy as np
 from generate_graphs import grakel2nx,grakel2degree_grakel
 from grakel.kernels import GraphletSampling,VertexHistogram
@@ -46,7 +45,7 @@ class NetLSD(Kernel):
         import netlsd
         self.embed = netlsd.heat
         self.embed_dataset = None
-
+        
 
 class NetLSDWave(Kernel):
     def __init__(self, normalize=True):
@@ -55,7 +54,7 @@ class NetLSDWave(Kernel):
         self.embed = netlsd.wave
         self.embed_dataset = None
         
-
+        
 class Gin(Kernel):
     def __init__(self, normalize=True):
         super().__init__(normalize)
@@ -77,6 +76,5 @@ class DegreeHistogram(Kernel):
         self.k = VertexHistogram(normalize=normalize)
 
     def fit_transform(self,pack):
-        pack = map(grakel2degree_grakel,pack)
+        pack = list(map(grakel2degree_grakel,pack))
         return self.k.fit_transform(pack)
-

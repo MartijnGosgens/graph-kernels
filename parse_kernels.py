@@ -14,6 +14,8 @@ st = dict()
 
 for idx, line in enumerate(open(fn)):
     chunks = line.strip().split('\t')
+    if len(chunks)<6:
+        print(idx,line,'is too short')
     key = str(chunks[1])+"\t"+str(chunks[2])
     if key not in st:
         st[key] = dict()

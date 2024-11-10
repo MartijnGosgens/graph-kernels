@@ -12,7 +12,7 @@ kernels = [NetLSD,NetLSDWave]
 
 interpolator = interpolate_GRG_torus_circle
 g_name = interpolator.__name__
-g_file = f'{g_name}_graphs.json'
+g_file = f'smallgraphs/{g_name}_graphs.json'
 vals_file = f'{g_name}_grid_vals.tsv'
 mmds_file = f'{g_name}_grid_mmds.json'
 
@@ -63,5 +63,5 @@ for k in kernels:
 
     #ax.set_title("NetLSD Wave MMD values on dimensionality interpolation")
     fig.tight_layout()
-    plt.savefig(f'dimensionality_{k_name}_heatmap.jpg')
+    plt.savefig(f'dimensionality_{k_name}_heatmap.svg')
     plt.show()

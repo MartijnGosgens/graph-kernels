@@ -14,8 +14,15 @@ from grakel.kernels import GraphletSampling
 from collections import defaultdict
 import pandas as pd
 
-#scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_start_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
-#plt.savefig('scatter_ER_inhomogeneous_start.svg',bbox_inches='tight')
+scatter_mmds(load_mmds('single_interpolate_ER_inhomogeneous_start_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
+plt.savefig('scatter_ER_inhomogeneous_start.svg',bbox_inches='tight')
+scatter_mmds(load_mmds('single_interpolate_ER_inhomogeneous_end_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
+plt.savefig('scatter_ER_inhomogeneous_end.svg',bbox_inches='tight')
+
+scatter_mmds(load_mmds('single_interpolate_GRG_torus_circle_start_mmds.json')['GraphletSampling'],transition_name=r'Torus$\leftrightarrow$Circle')
+plt.savefig('scatter_GRG_torus_circle_start.svg',bbox_inches='tight')
+scatter_mmds(load_mmds('single_interpolate_GRG_torus_circle_end_mmds.json')['GraphletSampling'],transition_name=r'Torus$\leftrightarrow$Circle')
+plt.savefig('scatter_GRG_torus_circle_end.svg',bbox_inches='tight')
 
 #scatter_mmds(load_mmds('interpolate_ER_inhomogeneous_end_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
 #plt.savefig('scatter_ER_inhomogeneous_end.svg',bbox_inches='tight')
@@ -67,11 +74,10 @@ load=True
 graphlet_size = 3
 normalize = False
 
-interpolators = [interpolate_ER_density, interpolate_ER_PPM, interpolate_ER_GRG_torus, interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle, interpolate_ER_GCG]
+interpolators = [interpolate_ER_PPM, interpolate_ER_GRG_torus, interpolate_ER_inhomogeneous, interpolate_GRG_torus_circle, interpolate_ER_GCG]
 
 transition2name = {
     interpolate_ER_inhomogeneous: r'ER$\leftrightarrow$CL',
-    interpolate_ER_density: r'ER$\leftrightarrow$Dense',
     interpolate_ER_PPM: r'ER$\leftrightarrow$PP',
     interpolate_ER_GRG_torus: r'ER$\leftrightarrow$Torus',
     interpolate_GRG_torus_circle: r'Torus$\leftrightarrow$Circle',
@@ -81,7 +87,6 @@ transition2name = {
 model2location = {
     'ER': (interpolate_ER_inhomogeneous,'0.0'),
     'CL': (interpolate_ER_inhomogeneous,'1.0'),
-    'Dense': (interpolate_ER_density,'1.0'),
     'PP': (interpolate_ER_PPM,'1.0'),
     'Torus': (interpolate_ER_GRG_torus,'1.0'),
     'Circle': (interpolate_GRG_torus_circle,'1.0'),

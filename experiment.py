@@ -1,15 +1,11 @@
-from generate_graphs import ig2edges,edges2grakel,grakel2degree_grakel
-from grakel.kernels import (RandomWalk,
-                            GraphletSampling,
+from generate_graphs import ig2edges,edges2grakel
+from grakel.kernels import (GraphletSampling,
                             PyramidMatch,
-                            NeighborhoodHash,
                             ShortestPath,
                             WeisfeilerLehman,
-                            Propagation,
-                            #OddSth,
                             WeisfeilerLehmanOptimalAssignment,
-                            NeighborhoodSubgraphPairwiseDistance,VertexHistogram)
-from other_kernels import NetLSD,Gin,GraphletSampling4
+                            NeighborhoodSubgraphPairwiseDistance)
+from other_kernels import NetLSD,NetLSDWave,Gin,GraphletSampling4,DegreeHistogram
 '''
     The kernels need not be grakel kernels, but they need to follow the same interface. That is, it should be a class
     (so that it has a .__name__), it's constructor needs to take the boolean parameter normalize and it needs to
@@ -22,18 +18,27 @@ import itertools as it
 from collections import defaultdict
 from time import time
 
-selected_kernels = (
+all_kernels = (
+     DegreeHistogram,
      GraphletSampling,
      GraphletSampling4,
      NetLSD,
+     NetLSDWave,
      Gin,
      PyramidMatch,
-     NeighborhoodHash,
      ShortestPath,
      WeisfeilerLehman,
-     #OddSth,
      WeisfeilerLehmanOptimalAssignment,
      NeighborhoodSubgraphPairwiseDistance,
+    )
+fast_kernels = (
+     DegreeHistogram,
+     NetLSD,
+     NetLSDWave,
+     Gin,
+     PyramidMatch,
+     WeisfeilerLehman,
+     WeisfeilerLehmanOptimalAssignment,
     )
 
 kernel_params = defaultdict(dict)
@@ -42,10 +47,6 @@ kernel_params[GraphletSampling] = {
 }
 kernel_params[GraphletSampling4] = {
     'k': 4
-}
-kernel_params[RandomWalk] = {
-    'lamda': 0.1, # not 'lambda' (typo in grakel?)
-    'p': 5
 }
 
 def tuple2str(t,sep=', '):
@@ -161,8 +162,9 @@ class Experiment:
         return nested_map(graphs,edges2grakel,depth=(3 if self.parameters is None else 4))
 
 
-    def apply_kernels(self,comparison_iterator,save_name,kernels=selected_kernels,save_mmds_name=None,return_mmds=True):
+    def apply_kernels(self,comparison_iterator,save_name,kernels=all_kernels,save_mmds_name=None,save_times_name=None,return_mmds=True):
         mmds = {k.__name__: defaultdict(list) for k in kernels}
+        times = {k.__name__: defaultdict(list) for k in kernels}
         with open(save_name, 'w') as save_file, open(save_mmds_name+'.tsv','w') as mmds_tsv:
             for locator1,locator2 in comparison_iterator:
                 pack1 = locate(self.graphs,locator1)
@@ -171,6 +173,8 @@ class Experiment:
                     #print(k.__name__)
                     start_time = time()
                     vals = k(normalize=True,**kernel_params[k]).fit_transform(pack1+pack2)
+                    mmd=calc_mmd(vals,self.sample_size)
+                    mmd_time = time()-start_time
                     it1 = range(len(pack1))
                     it2 = range(len(pack1),len(pack1)+len(pack2))
                     for i,j in it.product(it1,it2):
@@ -179,13 +183,21 @@ class Experiment:
                         print("\t".join(map(str, ['#', k.__name__]+list(locator1)+list(locator1)+[i,j,vals[i,j]])), flush=True,file=save_file)
                     for i,j in it.combinations(it2,2):
                         print("\t".join(map(str, ['#', k.__name__]+list(locator2)+list(locator2)+[i-len(pack1),j-len(pack1),vals[i,j]])), flush=True,file=save_file)
-                    mmd=calc_mmd(vals,self.sample_size)
-                    print(k.__name__,'pack',locator1,locator2,'took',time()-start_time,'and resulted in mmd =',mmd,flush=True)
+                    
+                    print(k.__name__,'pack',locator1,locator2,'took',mmd_time,'and resulted in mmd =',mmd,flush=True)
                     mmds[k.__name__][locator1[:-1],locator2[:-1]].append(mmd)
+                    times[k.__name__][locator1[:-1],locator2[:-1]].append(mmd_time)
                     print("\t".join(['#',k.__name__,tuple2str(locator1),tuple2str(locator2),str(mmd)]),flush=True,file=mmds_tsv)
         if save_mmds_name is not None:
             print(list(mmds.keys()))
             with open(save_mmds_name,'w') as mmd_file:
+                json.dump({k: {
+                    tuple2str(locator1)+'_vs_'+tuple2str(locator2): vals
+                    for (locator1,locator2),vals in kmmds.items()
+                } for k,kmmds in mmds.items()}, mmd_file)
+        if save_times_name is not None:
+            print(list(mmds.keys()))
+            with open(save_times_name,'w') as mmd_file:
                 json.dump({k: {
                     tuple2str(locator1)+'_vs_'+tuple2str(locator2): vals
                     for (locator1,locator2),vals in kmmds.items()
@@ -246,11 +258,3 @@ class Experiment:
                         # Compare the first self.npacks of endparam to the last self.npacks of endparam
                         # Note that they haven't been used in the comparison to intermediate params
                         yield (m,param,p_idx),(m,param,p_idx+len(self.parameter_names)*self.npacks)
-
-    def iterator_transitions_grid(self):
-        start_param = self.parameter_names[0]
-        m = self.generator_names[0]
-        for (i1,param1),(i2,param2) in it.product(enumerate(self.parameter_names),enumerate(self.parameter_names)):
-            for p_idx in range(self.npacks):
-                # Comparison to start
-                yield (m,param1,p_idx),(m,param2,p_idx)

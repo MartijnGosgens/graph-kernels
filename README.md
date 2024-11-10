@@ -5,8 +5,8 @@ The experiments require matplotlib, [netlsd](https://pypi.org/project/NetLSD/), 
 To create a virtual environment with these packages, run
 
 ````bash
-conda create --name graphkernels python=3.12 grakel pandas networkx matplotlib pip --channel conda-forge
-pip install python-igraph netlsd
+conda create --name graphkernels python=3.12 grakel pandas networkx matplotlib pip plotly conda dglteam::dgl --channel conda-forge
+pip install python-igraph netlsd kaleido torch
 
 
 ````

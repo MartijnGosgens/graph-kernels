@@ -78,11 +78,37 @@ for step in [0.0,0.6,1.0]:
         ),
         
     )
+fig.show()
+fig.write_image('test.pdf')
+# Do it again to prevent the "Loading [MathJax]/extensions/MathMenu.js" popup from appearing
+fig = go.Figure()
+
+for step in [0.0,0.6,1.0]:
+    label = f"$\\theta = {step:.01f}$"
+    graphs: List[NX_Graph] = [
+        ig2nx(interpolator(step=step)) for _ in range(NUM_OF_GRAPHS_FOR_EACH_MODEL)
+    ]
         
+    averaged_descriptor = calculate_descriptors_mean(graphs=graphs,
+                                                    desciptor_func=DESCRIPTOR,
+                                                    descriptor_params=DESCRIPTOR_OPTIONS,
+                                                    )
+            
+    
+    fig.add_trace(
+        go.Scatter(
+            x=DESCRIPTOR_OPTIONS["timescales"], 
+            y=averaged_descriptor, 
+            name=label,
+        ),
+        
+    )
+fig.show()
         
 #fig.update_xaxes(type="log")
-fig.update_layout(title="NetLSD Wave traces of {}".format(interpolator_name), xaxis_title="Timescales")
-fig.write_image("NetLSDWave_dimensionality_just3.jpeg".format(interpolator_name))
+fig.update_layout(xaxis_title="Timescales", width=500, height=300, margin=dict(l=20, r=20, t=20, b=20, pad=0))
+
+fig.write_image("NetLSDWave_dimensionality_just3.pdf".format(interpolator_name))
 
 
 fig = go.Figure()
@@ -114,7 +140,7 @@ for model_name,model_generator in model_name_to_generator.items():
         
 #fig.update_xaxes(type="log")
 fig.update_layout(title="NetLSD Wave traces of interpolation endpoints", xaxis_title="Timescales")
-fig.write_image("NetLSDWave_endpoints.jpeg")
+fig.write_image("NetLSDWave_endpoints.svg")
 
 for interpolator_name,interpolator in interpolators.items():
     fig = go.Figure()
@@ -144,5 +170,5 @@ for interpolator_name,interpolator in interpolators.items():
             
     #fig.update_xaxes(type="log")
     fig.update_layout(title="NetLSD Wave traces of {}".format(interpolator_name), xaxis_title="Timescales")
-    fig.write_image("NetLSDWave_{}.jpeg".format(interpolator_name))
+    fig.write_image("NetLSDWave_{}.svg".format(interpolator_name))
     
