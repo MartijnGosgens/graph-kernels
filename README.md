@@ -1,12 +1,17 @@
 # README
 
-The experiments require matplotlib, [netlsd](https://pypi.org/project/NetLSD/), [grakel](https://github.com/ysig/GraKeL), [networkx](https://networkx.org/) and [igraph](https://python.igraph.org/en/stable/).
-
-To create a virtual environment with these packages, run
+To create a virtual environment with all required packages for the experiments, run
 
 ````bash
-conda create --name graphkernels python=3.12 grakel pandas networkx matplotlib pip plotly conda dglteam::dgl --channel conda-forge
-pip install python-igraph netlsd kaleido torch
+conda create --name graphkernels python=3.7 grakel pandas matplotlib pip plotly --channel conda-forge
+conda activate graphkernels
+pip install python-igraph netlsd kaleido
+git clone https://github.com/uoguelph-mlrg/GGM-metrics GgmMetrics
+cd GgmMetrics/
+pip install -r requirements.txt
+pip install dgl==0.6.1
+cd ../
+ln -s GgmMetrics/evaluation
 
 
 ````

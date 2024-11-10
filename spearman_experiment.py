@@ -41,7 +41,7 @@ def calc_step_mmd_spearman(mmds):
             steps_dict[locator1[0]].append(float(locator1[-1]))
             mmds_dict[locator1[0]].append(v)
     return {
-        m: spearmanr(steps_dict[m],mmds_dict[m]).statistic
+        m: spearmanr(steps_dict[m],mmds_dict[m]).correlation
         for m in steps_dict.keys()
     }
 
@@ -75,7 +75,7 @@ def scatter_mmds(mmds,transition_name,ax=None):
         ax.set_xlabel(r'$\theta$' if step_star[m]==0 else r'$1-\theta$')
         ax.set_ylabel(r'MMD')
         ax.scatter(steps_dict[m],mmds_dict[m])
-        ax.set_title(f'$r_{step_star[m]}={spearmanr(steps_dict[m],mmds_dict[m]).statistic:.03f}$')
+        ax.set_title(f'$r_{step_star[m]}={spearmanr(steps_dict[m],mmds_dict[m]).correlation:.03f}$')
 load = False
 perform_start = True
 perform_end = True
