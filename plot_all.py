@@ -1,4 +1,4 @@
-from spearman_experiment import *
+#from spearman_experiment import *
 import matplotlib.pyplot as plt
 
 from generate_graphs import (interpolate_ER_triangular,
@@ -13,6 +13,7 @@ import numpy as np
 from grakel.kernels import GraphletSampling
 from collections import defaultdict
 import pandas as pd
+from experiment import scatter_mmds, load_mmds
 
 scatter_mmds(load_mmds('single_interpolate_ER_inhomogeneous_start_mmds.json')['ShortestPath'],transition_name=r'ER$\leftrightarrow$CL')
 plt.savefig('scatter_ER_inhomogeneous_start.svg',bbox_inches='tight')

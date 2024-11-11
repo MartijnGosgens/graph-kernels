@@ -2,26 +2,26 @@ from generate_graphs import (interpolate_ER_triangular, interpolate_ER_PPM, inte
 from collections import defaultdict
 from os import listdir,path
 
-folder = 'largegraphs'
-interpolators = ['interpolate_ER_inhomogeneous','interpolate_ER_triangular', 'interpolate_ER_PPM',  'interpolate_ER_GRG_torus', 'interpolate_GRG_torus_circle', 'interpolate_ER_GCG']
+folder = ''
+interpolators = ['interpolate_ER_inhomogeneous','interpolate_ER_PPM',  'interpolate_ER_GRG_torus', 'interpolate_GRG_torus_circle', 'interpolate_ER_GCG']
 
 k2display={
-#    "ShortestPath": "SP",
-#    "WeisfeilerLehman": "WL",
-#    "WeisfeilerLehmanOptimalAssignment": "WL-OA",
-#    "GraphletSampling": "Graphlet-3",
-#    "Graphlet4": "Graphlet-4",
-#    "NeighborhoodSubgraphPairwiseDistance": "NSPDK",
-#    "PyramidMatch": "PM",
-#    "NetLSD": "NetLSD",
-#    "Gin": "RandGIN",
-    "DegreeHistogram": "DegreeHistogram"
+    "DegreeHistogram": "Degree",
+    "ShortestPath": "SP",
+    "WeisfeilerLehman": "WL",
+    "WeisfeilerLehmanOptimalAssignment": "WL-OA",
+    "GraphletSampling": "Graphlet-3",
+    "GraphletSampling4": "Graphlet-4",
+    "NeighborhoodSubgraphPairwiseDistance": "NSPDK",
+    "PyramidMatch": "PM",
+    "NetLSD": "NetLSD-heat",
+    "NetLSDWave": "NetLSD-wave",
+    "Gin": "RandGIN",
 }
 
 interpolation2display = {
     #"interpolate_ER_density": "Density",
     "interpolate_ER_inhomogeneous": "Heterogeneity",
-    "interpolate_ER_triangular": "Triadic closure",
     "interpolate_ER_PPM": "Communities",
     "interpolate_ER_GRG_torus": "Geometry",
     "interpolate_GRG_torus_circle": "Dimensionality",
@@ -37,6 +37,33 @@ def tsv2dict(tsv_file,invert=False):
     for line in tsv_file.readlines():
         output[line.split('\t')[1]] = float(line.split('\t')[-1].strip()) * (-1 if invert else 1)
     return output,max(output,key=output.get)
+
+# Table of running times
+import json
+k2inter2time = defaultdict(dict)
+for interpolation in interpolators:
+    with open(path.join(folder,interpolation+'_start_times.json')) as start_file,open(path.join(folder,interpolation+'_end_times.json')) as end_file:
+        start_times = json.load(start_file)
+        end_times = json.load(end_file)
+        for k in k2display.keys():
+            ktimes = sum(start_times[k].values(),[])+sum(end_times[k].values(),[])
+            k2inter2time[k][interpolation] = sum(ktimes)/len(ktimes)
+with open('times.txt','w') as outfile:
+    print(r'\begin{tabular}{c|'+'c'*len(interpolators)+r'}',file=outfile)
+    print(r'\hline',file=outfile)
+    print('\t&\t'.join(['']+[
+        interpolation2display[interpolator]
+        for interpolator in interpolators
+    ])+r'\\',file=outfile)
+    for k,display in k2display.items():
+        print('\t&\t'.join([k2display[k]]+[
+            '${:.2f}$'.format(k2inter2time[k][interpolator])
+            for interpolator in interpolators
+        ])+r'\\', file=outfile)
+    print(r'\end{tabular}',file=outfile)
+
+            
+
 
 
 for fn in listdir(folder):

@@ -3,7 +3,7 @@ from generate_graphs import (interpolate_ER_PPM,
                              interpolate_ER_inhomogeneous,
                              interpolate_GRG_torus_circle,
                              interpolate_ER_GCG)
-from experiment import Experiment,all_kernels,tuple2str,fast_kernels
+from experiment import Experiment,all_kernels,tuple2str,fast_kernels,load_mmds,scatter_mmds
 from scipy.stats import spearmanr
 from collections import defaultdict
 from grakel.kernels import (GraphletSampling,
@@ -45,37 +45,6 @@ def calc_step_mmd_spearman(mmds):
         for m in steps_dict.keys()
     }
 
-def load_mmds(fn):
-    import json
-    with open(fn) as f:
-        mmds = json.load(f)
-    str2locator = lambda s: (s.split(', ')[0],float(s.split(', ')[1]))
-    return {
-        interpolator: {
-            tuple(map(str2locator,key.split('_vs_'))): vals
-            for key,vals in ivals.items()
-        }
-        for interpolator,ivals in mmds.items()
-    }
-
-def scatter_mmds(mmds,transition_name,ax=None):
-    steps_dict = defaultdict(list)
-    mmds_dict = defaultdict(list)
-    step_star = defaultdict(float)
-    for (locator1,locator2),vals in mmds.items():
-        step_star[locator1[0]] = int(locator2[-1])
-        for v in vals:
-            steps_dict[locator1[0]].append(abs(float(locator1[-1])-float(locator2[-1])))
-            mmds_dict[locator1[0]].append(v)
-    
-    if ax is None:
-        import matplotlib.pyplot as plt
-        _,ax = plt.subplots()
-    for m in steps_dict.keys():
-        ax.set_xlabel(r'$\theta$' if step_star[m]==0 else r'$1-\theta$')
-        ax.set_ylabel(r'MMD')
-        ax.scatter(steps_dict[m],mmds_dict[m])
-        ax.set_title(f'$r_{step_star[m]}={spearmanr(steps_dict[m],mmds_dict[m]).correlation:.03f}$')
 load = False
 perform_start = True
 perform_end = True
