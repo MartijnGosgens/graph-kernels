@@ -1,4 +1,5 @@
 # README
+This repository contains the code for the experiments of the paper "Evaluating Graph Generative Models with Graph Kernels: What Structural Characteristics Are Captured?". The paper is available on [OpenReview](https://openreview.net/pdf?id=d9MhajJT04).
 
 To create a virtual environment with all required packages for the experiments, run
 
